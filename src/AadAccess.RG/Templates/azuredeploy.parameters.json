@@ -1,0 +1,16 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webSiteName": { "value": "aad-access-web" },
+    "webApiName": { "value": "aad-access-api" },
+    "webHostingPlanName": { "value": "aad-access-service-plan" },
+    "skuName": { "value": "F1" },
+    "skuCapacity": { "value": 1 },
+    "functionAppName": { "value": "aad-access-functions" },
+    "functionStorageAccountName": { "value": "aadaccessstfunc" },
+    "functionStorageAccountvalue": { "value": "Standard_LRS" },
+    "keyVaultName": { "value": "aad-access-kv" },
+    "keyVaultSkuName": { "value": "Standard" }
+  }
+}
