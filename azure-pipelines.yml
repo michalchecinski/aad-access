@@ -1,0 +1,73 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build web'
+  inputs:
+    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet publish web'
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/web'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: web'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/web'
+    ArtifactName: web
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build api'
+  inputs:
+    projects: src/AadAccess.API/AadAccess.API.csproj
+    arguments: '--output $(Build.BinariesDirectory)/api'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet publish api'
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: 'src/AadAccess.API/AadAccess.API.csproj '
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/api'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: api'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
+    ArtifactName: api
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build functions'
+  inputs:
+    projects: src/AadAccess.Functions/AadAccess.Functions.csproj
+    arguments: '--output $(Build.BinariesDirectory)/functions --configuration $(BuildConfiguration)'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive functions'
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/functions'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: functions'
+  inputs:
+    PathtoPublish: '$(Build.BinariesDirectory)/functions'
+    ArtifactName: functions
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: devops'
+  inputs:
+    PathtoPublish: src/AadAccess.RG
+    ArtifactName: devops
