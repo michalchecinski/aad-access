@@ -178,3 +178,19 @@ stages:
         ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
         ScriptArguments: '-appName "$(webApiName)" -resourceGroup "$(resourceGroupName)"'
         azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/AddAppIdToAppSettings.ps1'
+        ScriptArguments: '-webAppName "$(webSiteName)" -webAppResourceGroupName "$(resourceGroupName)" -aadAppName "$(webApiName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/AddAppIdToAppSettings.ps1'
+        ScriptArguments: '-webAppName "$(webSiteName)" -webAppResourceGroupName "$(resourceGroupName)" -aadAppName "$(functionAppName)"'
+        azurePowerShellVersion: 'LatestVersion'
