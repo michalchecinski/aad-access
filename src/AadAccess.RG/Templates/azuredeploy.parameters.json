@@ -9,7 +9,7 @@
     "skuCapacity": { "value": 1 },
     "functionAppName": { "value": "aad-access-functions" },
     "functionStorageAccountName": { "value": "aadaccessstfunc" },
-    "functionStorageAccountvalue": { "value": "Standard_LRS" },
+    "functionStorageAccountType": { "value": "Standard_LRS" },
     "keyVaultName": { "value": "aad-access-kv" },
     "keyVaultSkuName": { "value": "Standard" }
   }

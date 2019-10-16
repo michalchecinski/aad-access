@@ -1,17 +1,13 @@
-﻿param(
-	[string]$functionAppName,
-	[string]$resourceGroup
-)
+﻿$functionAppName = "aad-access-functions"
+$resourceGroup = "aad-access"
 
 $url = 'https://'+$functionAppName+'.azurewebsites.net'
 
-Try
+$newApp = Get-AzADApplication -DisplayName "$functionAppName"
+
+if(!$newApp)
 {
-     $newApp = New-AzADApplication -DisplayName $functionAppName -IdentifierUris $url -HomePage $url
-}
-Catch [System.Exception]
-{
-     $newApp = Get-AzureADApplication -DisplayName "$functionAppName"
+    $newApp = New-AzADApplication -DisplayName $functionAppName -IdentifierUris $url -HomePage $url
 }
 
 $appId = $newApp.AppId
@@ -42,17 +38,19 @@ $authResourceName = $functionAppName + "/authsettings"
 
 $auth = Invoke-AzResourceAction -ResourceGroupName $resourceGroup -ResourceType Microsoft.Web/sites/config -ResourceName $authResourceName -Action list -ApiVersion 2016-08-01 -Force
 
-$auth.properties
+$PropertiesObject = @{
+    "enabled" = "True";
+    "unauthenticatedClientAction" = "RedirectToLoginPage";
+    "defaultProvider" = "AzureActiveDirectory";
+    "tokenStoreEnabled" = "True";
+    "clientId" = "$appId";
+    "issuer" = "$issuerUrl";
+    "allowedAudiences" = "{ $url+'/.auth/login/aad/callback', $url }";
+    "isAadAutoProvisioned" = "False";
+}
 
-$auth.properties.enabled = "True"
-$auth.properties.unauthenticatedClientAction = "RedirectToLoginPage"
-$auth.properties.tokenStoreEnabled = "True"
-$auth.properties.defaultProvider = "AzureActiveDirectory"
-$auth.properties.isAadAutoProvisioned = "False"
-$auth.properties.clientId = $appId
-$auth.properties.issuer = $issuerUrl
-$auth.properties.allowedAudiences = { $url+'/.auth/login/aad/callback', $url }
+$props = $auth.properties | ConvertTo-Json
 
-New-AzureRmResource -Properties $auth.properties -ResourceGroupName $resourceGroup -ResourceType Microsoft.Web/sites/config -ResourceName $authResourceName -ApiVersion 2016-08-01 -Force
+New-AzResource -Properties $PropertiesObject -ResourceGroupName $resourceGroup -ResourceType Microsoft.Web/sites/config -ResourceName $authResourceName -ApiVersion 2016-08-01 -Force
 
 Write-Host 'Auth set on app.'
