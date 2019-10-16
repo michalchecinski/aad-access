@@ -1,97 +1,112 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
+stages:
+- stage: Build
+  jobs:
+  - job: Build
 
-variables:
-  - name: buildPlatform
-    value: 'Any CPU'
-  - name: buildConfiguration
-    value: 'Release'
-  - group: aad-access-group
+    pool:
+      vmImage: 'windows-latest'
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build web'
-  inputs:
-    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+    variables:
+      - name: buildPlatform
+        value: 'Any CPU'
+      - name: buildConfiguration
+        value: 'Release'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish web'
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/web'
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build web'
+      inputs:
+        projects: src/AadAccess.MVC/AadAccess.MVC.csproj
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: web'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/web'
-    ArtifactName: web
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish web'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/web'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build api'
-  inputs:
-    projects: src/AadAccess.API/AadAccess.API.csproj
-    arguments: '--output $(Build.BinariesDirectory)/api'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: web'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/web'
+        ArtifactName: web
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish api'
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: 'src/AadAccess.API/AadAccess.API.csproj '
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/api'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build api'
+      inputs:
+        projects: src/AadAccess.API/AadAccess.API.csproj
+        arguments: '--output $(Build.BinariesDirectory)/api'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: api'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
-    ArtifactName: api
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish api'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: 'src/AadAccess.API/AadAccess.API.csproj '
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/api'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build functions'
-  inputs:
-    projects: src/AadAccess.Functions/AadAccess.Functions.csproj
-    arguments: '--output $(Build.BinariesDirectory)/functions --configuration $(BuildConfiguration)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: api'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
+        ArtifactName: api
 
-- task: ArchiveFiles@2
-  displayName: 'Archive functions'
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/functions'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build functions'
+      inputs:
+        projects: src/AadAccess.Functions/AadAccess.Functions.csproj
+        arguments: '--output $(Build.BinariesDirectory)/functions --configuration $(BuildConfiguration)'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: functions'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/functions.zip'
-    ArtifactName: functions
+    - task: ArchiveFiles@2
+      displayName: 'Archive functions'
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)/functions'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: devops'
-  inputs:
-    PathtoPublish: src/AadAccess.RG
-    ArtifactName: devops
-    
-- task: DownloadBuildArtifacts@0
-  inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    downloadPath: '$(System.ArtifactsDirectory)'
-    artifactName: 'devops'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: functions'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/functions.zip'
+        ArtifactName: functions
 
-- task: AzureResourceManagerTemplateDeployment@3
-  inputs:
-    deploymentScope: 'Resource Group'
-    ConnectedServiceName: "$(connectedServiceName)"
-    subscriptionName: "$(subscriptionName)"
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: "$(resourceGroupName)"
-    location: 'West Europe'
-    templateLocation: 'Linked artifact'
-    csmFile: '$$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
-    csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
-    overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
-    deploymentMode: 'Incremental'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: devops'
+      inputs:
+        PathtoPublish: src/AadAccess.RG
+        ArtifactName: devops
+        
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'devops'
+
+- stage: Deploy
+  jobs:
+  - job: Deploy ARM Template
+
+    pool:
+      vmImage: 'windows-latest'
+
+    variables:
+    - group: aad-access-group
+
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        ConnectedServiceName: "$(connectedServiceName)"
+        subscriptionName: "$(subscriptionName)"
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: "$(resourceGroupName)"
+        location: 'West Europe'
+        templateLocation: 'Linked artifact'
+        csmFile: '$$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
+        csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
+        overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
+        deploymentMode: 'Incremental'
