@@ -3,17 +3,18 @@ trigger:
 
 stages:
 - stage: Build
+
+  variables:
+      - name: buildPlatform
+        value: 'Any CPU'
+      - name: buildConfiguration
+        value: 'Release'
+
   jobs:
   - job: Build
 
     pool:
       vmImage: 'windows-latest'
-
-    variables:
-      - name: buildPlatform
-        value: 'Any CPU'
-      - name: buildConfiguration
-        value: 'Release'
 
     steps:
     - task: DotNetCoreCLI@2
@@ -87,13 +88,14 @@ stages:
         artifactName: 'devops'
 
 - stage: Deploy
+
+  variables:
+  - group: aad-access-group
+
   jobs:
   - job: Deploy_ARM
     pool:
       vmImage: 'windows-latest'
-
-    variables:
-    - group: aad-access-group
 
     steps:
     - task: AzureResourceManagerTemplateDeployment@3
