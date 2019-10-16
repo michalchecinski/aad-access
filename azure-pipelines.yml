@@ -1,14 +1,17 @@
 trigger:
 - master
 
+variables:
+- group: aad-access-group
+
 stages:
 - stage: Build
 
   variables:
-      - name: buildPlatform
-        value: 'Any CPU'
-      - name: buildConfiguration
-        value: 'Release'
+    - name: buildPlatform
+      value: 'Any CPU'
+    - name: buildConfiguration
+      value: 'Release'
 
   jobs:
   - job: Build
@@ -88,10 +91,6 @@ stages:
         artifactName: 'devops'
 
 - stage: Deploy
-
-  variables:
-  - group: aad-access-group
-
   jobs:
   - job: Deploy_ARM
     pool:
