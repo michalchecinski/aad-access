@@ -88,8 +88,7 @@ stages:
 
 - stage: Deploy
   jobs:
-  - job: Deploy ARM Template
-
+  - job: Deploy_ARM
     pool:
       vmImage: 'windows-latest'
 
