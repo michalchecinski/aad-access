@@ -106,7 +106,7 @@ stages:
         resourceGroupName: "$(resourceGroupName)"
         location: 'West Europe'
         templateLocation: 'Linked artifact'
-        csmFile: '$$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
+        csmFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
         csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
         overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
         deploymentMode: 'Incremental'
