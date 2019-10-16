@@ -5,8 +5,11 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  - name: buildPlatform
+    value: 'Any CPU'
+  - name: buildConfiguration
+    value: 'Release'
+  - group: aad-access-group
 
 steps:
 - task: DotNetCoreCLI@2
@@ -71,3 +74,17 @@ steps:
   inputs:
     PathtoPublish: src/AadAccess.RG
     ArtifactName: devops
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    ConnectedServiceName: "$(connectedServiceName)"
+    subscriptionName: "$(subscriptionName)"
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: "$(resourceGroupName)"
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Pipeline.Workspace)/devops/Templates/azuredeploy.json'
+    csmParametersFile: '$(Pipeline.Workspace)/devops/Templates/azuredeploy.parameters.json'
+    overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
+    deploymentMode: 'Incremental'
