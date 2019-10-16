@@ -100,7 +100,7 @@ stages:
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
         deploymentScope: 'Resource Group'
-        ConnectedServiceName: "$(connectedServiceName)"
+        ConnectedServiceName: "$(subscriptionConnectionName)"
         subscriptionName: "$(subscriptionConnectionId)"
         action: 'Create Or Update Resource Group'
         resourceGroupName: "$(resourceGroupName)"
@@ -121,7 +121,7 @@ stages:
     - task: AzureRmWebAppDeployment@4
       inputs:
         ConnectionType: 'AzureRM'
-        azureSubscription: 'aad-access'
+        azureSubscription: "$(subscriptionConnectionName)"
         appType: 'webApp'
         WebAppName: "$(webSiteName)"
         packageForLinux: '$(System.ArtifactsDirectory)/web/AadAccess.MVC.zip'
@@ -136,7 +136,7 @@ stages:
     - task: AzureRmWebAppDeployment@4
       inputs:
         ConnectionType: 'AzureRM'
-        azureSubscription: 'aad-access'
+        azureSubscription: "$(subscriptionConnectionName)"
         appType: 'webApp'
         WebAppName: "$(webApiName)"
         packageForLinux: '$(System.ArtifactsDirectory)/api/AadAccess.API.zip'
@@ -151,7 +151,7 @@ stages:
     - task: AzureRmWebAppDeployment@4
       inputs:
         ConnectionType: 'AzureRM'
-        azureSubscription: 'aad-access'
+        azureSubscription: "$(subscriptionConnectionName)"
         appType: 'webApp'
         WebAppName: "$(functionAppName)"
         packageForLinux: '$(System.ArtifactsDirectory)/functions/functions.zip'
