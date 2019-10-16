@@ -110,3 +110,48 @@ stages:
         csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
         overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
         deploymentMode: 'Incremental'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'web'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionName)"
+        appType: 'webApp'
+        WebAppName: "$(webSiteName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/web/AadAccess.MVC.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'api'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionName)"
+        appType: 'webApp'
+        WebAppName: "$(webApiName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/api/AadAccess.API.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'functions'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionName)"
+        appType: 'webApp'
+        WebAppName: "$(functionAppName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/functions/functions.zip'
