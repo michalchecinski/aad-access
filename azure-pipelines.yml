@@ -74,10 +74,14 @@ steps:
   inputs:
     PathtoPublish: src/AadAccess.RG
     ArtifactName: devops
-
-- task: DownloadPipelineArtifact@2
+    
+- task: DownloadBuildArtifacts@0
   inputs:
-    artifact: devops
+    buildType: 'current'
+    downloadType: 'single'
+    downloadPath: '$(System.ArtifactsDirectory)'
+    artifactName: 'devops'
+
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
     deploymentScope: 'Resource Group'
@@ -87,7 +91,7 @@ steps:
     resourceGroupName: "$(resourceGroupName)"
     location: 'West Europe'
     templateLocation: 'Linked artifact'
-    csmFile: '$(Pipeline.Workspace)/devops/Templates/azuredeploy.json'
-    csmParametersFile: '$(Pipeline.Workspace)/devops/Templates/azuredeploy.parameters.json'
+    csmFile: '$$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
+    csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
     overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
     deploymentMode: 'Incremental'
