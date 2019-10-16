@@ -85,7 +85,7 @@ stages:
 
 - stage: Deploy
   jobs:
-  - job: Deploy_ARM
+  - job: Deploy
     pool:
       vmImage: 'windows-latest'
 
@@ -100,8 +100,8 @@ stages:
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
         deploymentScope: 'Resource Group'
-        ConnectedServiceName: "$(connectedServiceName)"
-        subscriptionName: "$(subscriptionName)"
+        ConnectedServiceName: "$(subscriptionConnectionName)"
+        subscriptionName: "$(subscriptionConnectionId)"
         action: 'Create Or Update Resource Group'
         resourceGroupName: "$(resourceGroupName)"
         location: 'West Europe'
@@ -110,3 +110,71 @@ stages:
         csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
         overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
         deploymentMode: 'Incremental'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'web'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(webSiteName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/web/AadAccess.MVC.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'api'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(webApiName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/api/AadAccess.API.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'functions'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(functionAppName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/functions/functions.zip'
+
+- stage: Set_accesses
+  jobs:
+  - job: Set_accesses
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(functionAppName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(webApiName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
