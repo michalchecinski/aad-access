@@ -82,13 +82,6 @@ stages:
       inputs:
         PathtoPublish: src/AadAccess.RG
         ArtifactName: devops
-        
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        downloadPath: '$(System.ArtifactsDirectory)'
-        artifactName: 'devops'
 
 - stage: Deploy
   jobs:
@@ -97,6 +90,13 @@ stages:
       vmImage: 'windows-latest'
 
     steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'devops'
+
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
         deploymentScope: 'Resource Group'
