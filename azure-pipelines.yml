@@ -163,6 +163,14 @@ stages:
       vmImage: 'windows-latest'
 
     steps:
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'devops'
+
     - task: AzurePowerShell@4
       inputs:
         azureSubscription: "$(subscriptionConnectionName)"
