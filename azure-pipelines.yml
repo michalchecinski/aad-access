@@ -85,7 +85,7 @@ stages:
 
 - stage: Deploy
   jobs:
-  - job: Deploy_ARM
+  - job: Deploy
     pool:
       vmImage: 'windows-latest'
 
@@ -155,3 +155,26 @@ stages:
         appType: 'webApp'
         WebAppName: "$(functionAppName)"
         packageForLinux: '$(System.ArtifactsDirectory)/functions/functions.zip'
+
+- stage: Set_accesses
+  jobs:
+  - job: Set_accesses
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(functionAppName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(webApiName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
