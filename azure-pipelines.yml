@@ -101,7 +101,7 @@ stages:
       inputs:
         deploymentScope: 'Resource Group'
         ConnectedServiceName: "$(connectedServiceName)"
-        subscriptionName: "$(subscriptionName)"
+        subscriptionName: "$(subscriptionConnectionId)"
         action: 'Create Or Update Resource Group'
         resourceGroupName: "$(resourceGroupName)"
         location: 'West Europe'
