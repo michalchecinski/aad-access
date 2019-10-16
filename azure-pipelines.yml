@@ -1,97 +1,204 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
-
 variables:
-  - name: buildPlatform
-    value: 'Any CPU'
-  - name: buildConfiguration
-    value: 'Release'
-  - group: aad-access-group
+- group: aad-access-group
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build web'
-  inputs:
-    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+stages:
+- stage: Build
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish web'
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: src/AadAccess.MVC/AadAccess.MVC.csproj
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/web'
+  variables:
+    - name: buildPlatform
+      value: 'Any CPU'
+    - name: buildConfiguration
+      value: 'Release'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: web'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/web'
-    ArtifactName: web
+  jobs:
+  - job: Build
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build api'
-  inputs:
-    projects: src/AadAccess.API/AadAccess.API.csproj
-    arguments: '--output $(Build.BinariesDirectory)/api'
+    pool:
+      vmImage: 'windows-latest'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish api'
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: 'src/AadAccess.API/AadAccess.API.csproj '
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/api'
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build web'
+      inputs:
+        projects: src/AadAccess.MVC/AadAccess.MVC.csproj
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: api'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
-    ArtifactName: api
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish web'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: src/AadAccess.MVC/AadAccess.MVC.csproj
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/web'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build functions'
-  inputs:
-    projects: src/AadAccess.Functions/AadAccess.Functions.csproj
-    arguments: '--output $(Build.BinariesDirectory)/functions --configuration $(BuildConfiguration)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: web'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/web'
+        ArtifactName: web
 
-- task: ArchiveFiles@2
-  displayName: 'Archive functions'
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/functions'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build api'
+      inputs:
+        projects: src/AadAccess.API/AadAccess.API.csproj
+        arguments: '--output $(Build.BinariesDirectory)/api'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: functions'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/functions.zip'
-    ArtifactName: functions
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish api'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: 'src/AadAccess.API/AadAccess.API.csproj '
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)/api'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: devops'
-  inputs:
-    PathtoPublish: src/AadAccess.RG
-    ArtifactName: devops
-    
-- task: DownloadBuildArtifacts@0
-  inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    downloadPath: '$(System.ArtifactsDirectory)'
-    artifactName: 'devops'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: api'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/api'
+        ArtifactName: api
 
-- task: AzureResourceManagerTemplateDeployment@3
-  inputs:
-    deploymentScope: 'Resource Group'
-    ConnectedServiceName: "$(connectedServiceName)"
-    subscriptionName: "$(subscriptionName)"
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: "$(resourceGroupName)"
-    location: 'West Europe'
-    templateLocation: 'Linked artifact'
-    csmFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
-    csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
-    overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
-    deploymentMode: 'Incremental'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build functions'
+      inputs:
+        projects: src/AadAccess.Functions/AadAccess.Functions.csproj
+        arguments: '--output $(Build.BinariesDirectory)/functions --configuration $(BuildConfiguration)'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive functions'
+      inputs:
+        rootFolderOrFile: '$(Build.BinariesDirectory)/functions'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: functions'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/functions.zip'
+        ArtifactName: functions
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: devops'
+      inputs:
+        PathtoPublish: src/AadAccess.RG
+        ArtifactName: devops
+
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'devops'
+
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        ConnectedServiceName: "$(subscriptionConnectionName)"
+        subscriptionName: "$(subscriptionConnectionId)"
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: "$(resourceGroupName)"
+        location: 'West Europe'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.json'
+        csmParametersFile: '$(System.ArtifactsDirectory)/devops/Templates/azuredeploy.parameters.json'
+        overrideParameters: '-webSiteName "$(webSiteName)" -webApiName "$(webApiName)" -functionAppName "$(functionAppName)"'
+        deploymentMode: 'Incremental'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'web'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(webSiteName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/web/AadAccess.MVC.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'api'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(webApiName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/api/AadAccess.API.zip'
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'functions'
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: "$(subscriptionConnectionName)"
+        appType: 'webApp'
+        WebAppName: "$(functionAppName)"
+        packageForLinux: '$(System.ArtifactsDirectory)/functions/functions.zip'
+
+- stage: Set_accesses
+  jobs:
+  - job: Set_accesses
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        artifactName: 'devops'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(functionAppName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/SetWebAppAuth.ps1'
+        ScriptArguments: '-appName "$(webApiName)" -resourceGroup "$(resourceGroupName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/AddAppIdToAppSettings.ps1'
+        ScriptArguments: '-webAppName "$(webSiteName)" -webAppResourceGroupName "$(resourceGroupName)" -aadAppName "$(webApiName)"'
+        azurePowerShellVersion: 'LatestVersion'
+
+    - task: AzurePowerShell@4
+      inputs:
+        azureSubscription: "$(subscriptionConnectionName)"
+        ScriptType: 'FilePath'
+        ScriptPath: '$(System.ArtifactsDirectory)/devops/Scripts/AddAppIdToAppSettings.ps1'
+        ScriptArguments: '-webAppName "$(webSiteName)" -webAppResourceGroupName "$(resourceGroupName)" -aadAppName "$(functionAppName)"'
+        azurePowerShellVersion: 'LatestVersion'
