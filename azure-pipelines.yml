@@ -75,6 +75,9 @@ steps:
     PathtoPublish: src/AadAccess.RG
     ArtifactName: devops
 
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: devops
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
     deploymentScope: 'Resource Group'
