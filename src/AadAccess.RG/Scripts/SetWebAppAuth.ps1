@@ -1,13 +1,15 @@
-﻿$functionAppName = "aad-access-functions"
-$resourceGroup = "aad-access"
+﻿params(
+    [string]$appName,
+    [string]$resourceGroup
+)
 
-$url = 'https://'+$functionAppName+'.azurewebsites.net'
+$url = 'https://'+$appName+'.azurewebsites.net'
 
-$newApp = Get-AzADApplication -DisplayName "$functionAppName"
+$newApp = Get-AzADApplication -DisplayName "$appName"
 
 if(!$newApp)
 {
-    $newApp = New-AzADApplication -DisplayName $functionAppName -IdentifierUris $url -HomePage $url
+    $newApp = New-AzADApplication -DisplayName $appName -IdentifierUris $url -HomePage $url
 }
 
 $appId = $newApp.AppId
@@ -15,7 +17,7 @@ $appId = $newApp.AppId
 Write-Host 'AppID: '
 $appId
 
-$servicePrincipal = Get-AzADServicePrincipal -DisplayName "$functionAppName" | Where-Object {$_.ServicePrincipalType -ne "ManagedIdentity"}
+$servicePrincipal = Get-AzADServicePrincipal -DisplayName "$appName" | Where-Object {$_.ServicePrincipalType -ne "ManagedIdentity"}
 
 if(!$servicePrincipal)
 {
@@ -34,7 +36,7 @@ $tenantId
 
 $issuerUrl = 'https://sts.windows.net/'+$tenantId
 
-$authResourceName = $functionAppName + "/authsettings"
+$authResourceName = $appName + "/authsettings"
 
 $auth = Invoke-AzResourceAction -ResourceGroupName $resourceGroup -ResourceType Microsoft.Web/sites/config -ResourceName $authResourceName -Action list -ApiVersion 2016-08-01 -Force
 
