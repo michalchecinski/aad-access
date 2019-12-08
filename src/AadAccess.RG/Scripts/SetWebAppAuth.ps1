@@ -1,28 +1,32 @@
-﻿$functionAppName = "aad-access-functions"
-$resourceGroup = "aad-access"
+﻿param(
+    [string]$appName,
+    [string]$resourceGroup
+)
 
-$url = 'https://'+$functionAppName+'.azurewebsites.net'
+$aadAppName = $appName+"-access"
 
-$newApp = Get-AzADApplication -DisplayName "$functionAppName"
+$url = 'https://'+$appName+'.azurewebsites.net'
+
+$newApp = Get-AzADApplication -DisplayName "$aadAppName"
 
 if(!$newApp)
 {
-    $newApp = New-AzADApplication -DisplayName $functionAppName -IdentifierUris $url -HomePage $url
+    $newApp = New-AzADApplication -DisplayName $aadAppName -IdentifierUris $url -HomePage $url
 }
 
-$appId = $newApp.AppId
+$appId = $newApp.ApplicationId.ToString()
 
 Write-Host 'AppID: '
 $appId
 
-$servicePrincipal = Get-AzADServicePrincipal -DisplayName "$functionAppName" | Where-Object {$_.ServicePrincipalType -ne "ManagedIdentity"}
+$servicePrincipal = Get-AzADServicePrincipal -ApplicationId $appId
 
 if(!$servicePrincipal)
 {
-	$servicePrincipal = New-AzADServicePrincipal -ApplicationId $newApp.AppId -Homepage $url -Tags {WindowsAzureActiveDirectoryIntegratedApp AppServiceIntegratedApp}
+	$servicePrincipal = New-AzADServicePrincipal -ApplicationId $appId
 }
 
-$servicePrincipalId = $servicePrincipal.ObjectId
+$servicePrincipalId = $servicePrincipal.Id.ToString()
 
 Write-Host 'Service Principal ID: '
 $servicePrincipalId

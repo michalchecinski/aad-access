@@ -18,10 +18,10 @@
             _keyVaultService = new KeyVaultService();
         }
         
-        public IActionResult Index()
+        public async System.Threading.Tasks.Task<IActionResult> IndexAsync()
         {
-            ViewData["FunctionsValue"] = _functionsValueService.GetValue("ValueFunction");
-            ViewData["ApiValue"] = _apiValueService.GetValue("Value");
+            ViewData["FunctionsValue"] = await _functionsValueService.GetValue("ValueFunction");
+            ViewData["ApiValue"] = await _apiValueService.GetValue("Value");
             ViewData["KeyVaultValue"] = _keyVaultService.GetSecretValue;
 
             return View();

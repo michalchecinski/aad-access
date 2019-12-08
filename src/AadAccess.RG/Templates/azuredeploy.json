@@ -56,6 +56,8 @@
   "variables": {
     "functionsHostingPlanName": "[parameters('functionAppName')]",
     "keyVaultUrl": "[concat('https://', parameters('keyVaultName') ,'.vault.azure.net/')]",
+    "webApiUrl": "[concat('https://', parameters('webApiName') ,'.azurewebsites.net/')]",
+    "functionsUrl": "[concat('https://', parameters('functionAppName') ,'.azurewebsites.net/')]",
     "tenantId": "[subscription().tenantId]",
     "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('functionStorageAccountName'))]"
   },
@@ -131,6 +133,14 @@
           {
             "name": "KeyVaultUrl",
             "value": "[variables('keyVaultUrl')]"
+          },
+          {
+            "name": "FunctionsBaseAddress",
+            "value": "[variables('functionsUrl')]"
+          },
+          {
+            "name": "ApiBaseAddress",
+            "value": "[variables('webApiUrl')]"
           }
         ]
       },
