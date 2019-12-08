@@ -1,11 +1,11 @@
 ﻿namespace AadAccess.MVC.Services
 {
-    using System.Configuration;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
     using Flurl;
-    
+    using Microsoft.Extensions.Configuration;
+
     public class FunctionsValueService
     {
         private readonly ManagedIdentityRequestToken _managedIdentityRequestToken;
@@ -13,14 +13,14 @@
         private readonly string _appId;
         private readonly string _apiBaseAddress;
 
-        public FunctionsValueService()
+        public FunctionsValueService(IConfiguration config)
         {
             _managedIdentityRequestToken = new ManagedIdentityRequestToken();
             _httpClient = new HttpClient();
             
-            _appId = ConfigurationManager.AppSettings["FunctionsAppId"];
+            _appId = config["FunctionsAppId"];
             
-            var baseAddress = ConfigurationManager.AppSettings["FunctionsBaseAddress"];
+            var baseAddress = config["FunctionsBaseAddress"];
             _apiBaseAddress = Url.Combine(baseAddress, "api");
         }
 

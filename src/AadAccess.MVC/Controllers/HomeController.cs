@@ -2,6 +2,7 @@
 {
     using System.Diagnostics;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
     using Models;
     using Services;
     
@@ -11,11 +12,11 @@
         private readonly ApiValueService _apiValueService;
         private readonly KeyVaultService _keyVaultService;
 
-        public HomeController()
+        public HomeController(IConfiguration config)
         {
-            _functionsValueService = new FunctionsValueService();
-            _apiValueService = new ApiValueService();
-            _keyVaultService = new KeyVaultService();
+            _functionsValueService = new FunctionsValueService(config);
+            _apiValueService = new ApiValueService(config);
+            _keyVaultService = new KeyVaultService(config);
         }
         
         public async System.Threading.Tasks.Task<IActionResult> IndexAsync()

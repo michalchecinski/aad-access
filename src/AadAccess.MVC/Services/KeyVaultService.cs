@@ -1,17 +1,17 @@
 ﻿namespace AadAccess.MVC.Services
 {
-    using System.Configuration;
     using Microsoft.Azure.KeyVault;
     using Microsoft.Azure.Services.AppAuthentication;
+    using Microsoft.Extensions.Configuration;
 
     public class KeyVaultService
     {
         private readonly string _keyVaultUrl;
         private readonly KeyVaultClient _keyVaultClient;
 
-        public KeyVaultService()
+        public KeyVaultService(IConfiguration config)
         {
-            _keyVaultUrl = ConfigurationManager.AppSettings["KeyVaultUrl"];
+            _keyVaultUrl = config["KeyVaultUrl"];
 
             AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
             _keyVaultClient =
