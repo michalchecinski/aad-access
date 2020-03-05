@@ -34,7 +34,7 @@ New-AzResourceGroup 'aad-access' "West Europe"
 
 New-AzResourceGroupDeployment -ResourceGroupName 'aad-access' `
     -TemplateFile ./src/AadAccess.RG/Templates/azuredeploy.json `
-    -ParametersFile ./src/AadAccess.RG/Templates/azuredeploy.parameters.json
+    -TemplateParameterFile  ./src/AadAccess.RG/Templates/azuredeploy.parameters.json
 
 Write-Host "Set webapp auth..."
 ./src/AadAccess.RG/Scripts/SetWebAppAuth.ps1 -appName aad-access-api -resourceGroup aad-access

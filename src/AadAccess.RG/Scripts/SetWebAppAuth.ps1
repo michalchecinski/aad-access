@@ -38,7 +38,7 @@ $tenantId
 
 $issuerUrl = 'https://sts.windows.net/'+$tenantId
 
-$authResourceName = $functionAppName + "/authsettings"
+$authResourceName = $appName + "/authsettings"
 
 $auth = Invoke-AzResourceAction -ResourceGroupName $resourceGroup -ResourceType Microsoft.Web/sites/config -ResourceName $authResourceName -Action list -ApiVersion 2016-08-01 -Force
 
