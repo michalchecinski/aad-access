@@ -44,12 +44,20 @@ Write-Host "Add AppId to App Settings..."
 ./src/AadAccess.RG/Scripts/AddAppIdToAppSettings.ps1 -webAppName aad-access-web `
     -webAppResourceGroupName aad-access `
     -aadAppName aad-access-api-access `
-    -appSettingName ApiBaseAddress
+    -appSettingName ApiAppId
+
 ./src/AadAccess.RG/Scripts/AddAppIdToAppSettings.ps1 -webAppName aad-access-web `
     -webAppResourceGroupName aad-access `
     -aadAppName aad-access-functions-access `
-    -appSettingName FunctionsBaseAddress
+    -appSettingName FunctionsAppId
 
 Write-Host "Add WebApp to service principals in role..."
-./src/AadAccess.RG/Scripts/AddAppToServicePrincipalInRole.ps1 -securedAppName aad-access-api-access -clientAppName aad-access-web -roleName SensitiveData
-./src/AadAccess.RG/Scripts/AddAppToServicePrincipalInRole.ps1 -securedAppName aad-access-functions-access -clientAppName aad-access-web -roleName SensitiveData
+./src/AadAccess.RG/Scripts/AddAppToServicePrincipalInRole.ps1 `
+    -securedAppName aad-access-api-access `
+    -clientAppName aad-access-web `
+    -roleName SensitiveData
+
+./src/AadAccess.RG/Scripts/AddAppToServicePrincipalInRole.ps1 `
+    -securedAppName aad-access-functions-access `
+    -clientAppName aad-access-web `
+    -roleName SensitiveData

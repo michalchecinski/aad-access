@@ -4,8 +4,10 @@ param(
 	[string]$roleName
 )
 
-Write-Host 'Installing AzureAD module'
-Install-Module -Name AzureAD -Force -Scope CurrentUser
+if ( -not (Get-Module -ListAvailable -Name AzureAD)) {
+    Write-Host 'Installing AzureAD module'
+	Install-Module -Name AzureAD -Force -Scope CurrentUser
+}
 
 Write-Host 'Connecting to AzureAD'
 $currentAzureContext = Get-AzContext
