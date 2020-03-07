@@ -119,7 +119,6 @@
         ],
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webHostingPlanName'))]",
         "reserved": false,
-        "siteConfig": null,
         "scmSiteAlsoStopped": false,
         "hostingEnvironmentProfile": null,
         "clientAffinityEnabled": true,
@@ -129,20 +128,22 @@
         "dailyMemoryTimeQuota": 0,
         "cloningInfo": null,
         "httpsOnly": false,
-        "appSettings": [
-          {
-            "name": "KeyVaultUrl",
-            "value": "[variables('keyVaultUrl')]"
-          },
-          {
-            "name": "FunctionsBaseAddress",
-            "value": "[variables('functionsUrl')]"
-          },
-          {
-            "name": "ApiBaseAddress",
-            "value": "[variables('webApiUrl')]"
-          }
-        ]
+        "siteConfig":{
+          "appSettings": [
+            {
+              "name": "KeyVaultUrl",
+              "value": "[variables('keyVaultUrl')]"
+            },
+            {
+              "name": "FunctionsBaseAddress",
+              "value": "[variables('functionsUrl')]"
+            },
+            {
+              "name": "ApiBaseAddress",
+              "value": "[variables('webApiUrl')]"
+            }
+          ]
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('webHostingPlanName'))]"

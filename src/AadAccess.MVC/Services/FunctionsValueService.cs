@@ -29,8 +29,19 @@
             var token = await _managedIdentityRequestToken.GetToken(_appId);
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
+            string value;
+            try
+            {
+                var url = $"{_apiBaseAddress}/{ requestUri}";
+                value = await _httpClient.GetStringAsync(url);
+            }
+            catch (System.Exception e)
+            {
+                var m = e.Message;
+                throw;
+            }
 
-            return await _httpClient.GetStringAsync(_apiBaseAddress.AppendPathSegment(requestUri));
+            return value;
         }
     }
 }

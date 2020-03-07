@@ -22,7 +22,7 @@
         public async System.Threading.Tasks.Task<IActionResult> IndexAsync()
         {
             ViewData["FunctionsValue"] = await _functionsValueService.GetValue("ValueFunction");
-            ViewData["ApiValue"] = await _apiValueService.GetValue("Value");
+            //ViewData["ApiValue"] = await _apiValueService.GetValue("Value");
             ViewData["KeyVaultValue"] = _keyVaultService.GetSecretValue;
 
             return View();
